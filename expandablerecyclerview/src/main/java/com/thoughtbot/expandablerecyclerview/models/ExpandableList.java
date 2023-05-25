@@ -1,5 +1,7 @@
 package com.thoughtbot.expandablerecyclerview.models;
 
+import android.util.Log;
+
 import java.util.List;
 
 /*
@@ -70,6 +72,12 @@ public class ExpandableList {
     for (int i = 0; i < groups.size(); i++) {
       groupItemCount = numberOfVisibleItemsInGroup(i);
       if (adapted == 0) {
+        if (groupItemCount == 1 && groups.get(i).getItems().isEmpty()) {
+          if (groups.get(i).getViewType() != ExpandableListPosition.NO_ITEM_TYPE) {
+            return ExpandableListPosition.obtain(groups.get(i).getViewType(), i, -1, flPos);
+          }
+          return ExpandableListPosition.obtain(ExpandableListPosition.ITEM, i, -1, flPos);
+        }
         return ExpandableListPosition.obtain(ExpandableListPosition.GROUP, i, -1, flPos);
       } else if (adapted < groupItemCount) {
         return ExpandableListPosition.obtain(ExpandableListPosition.CHILD, i, adapted - 1, flPos);

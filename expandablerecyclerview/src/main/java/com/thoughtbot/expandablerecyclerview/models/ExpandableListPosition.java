@@ -31,6 +31,10 @@ public class ExpandableListPosition {
    */
   public final static int GROUP = 2;
 
+  public final static int ITEM = 3;
+
+  public final static int NO_ITEM_TYPE = 0;
+
   /**
    * The position of either the group being referred to, or the parent
    * group of the child being referred to
