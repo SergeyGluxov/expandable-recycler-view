@@ -1,16 +1,20 @@
 package com.thoughtbot.expandablerecyclerview;
 
-import android.support.v7.widget.RecyclerView.ViewHolder;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import android.view.ViewGroup;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableList;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableListPosition;
 import com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder;
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder;
+import com.thoughtbot.expandablerecyclerview.viewholders.ItemViewHolder;
+
 import java.util.List;
 
-public abstract class MultiTypeExpandableRecyclerViewAdapter<GVH extends GroupViewHolder, CVH extends ChildViewHolder>
-    extends ExpandableRecyclerViewAdapter<GVH, CVH> {
+public abstract class MultiTypeExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
+        CVH extends ChildViewHolder,
+        IVH extends ItemViewHolder>
+    extends ExpandableRecyclerViewAdapter<GVH, CVH, IVH> {
 
   public MultiTypeExpandableRecyclerViewAdapter(List<? extends ExpandableGroup> groups) {
     super(groups);

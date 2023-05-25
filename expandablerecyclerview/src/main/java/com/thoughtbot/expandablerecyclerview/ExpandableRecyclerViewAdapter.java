@@ -2,21 +2,24 @@ package com.thoughtbot.expandablerecyclerview;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import android.view.ViewGroup;
 import com.thoughtbot.expandablerecyclerview.listeners.ExpandCollapseListener;
 import com.thoughtbot.expandablerecyclerview.listeners.GroupExpandCollapseListener;
 import com.thoughtbot.expandablerecyclerview.listeners.OnGroupClickListener;
+import com.thoughtbot.expandablerecyclerview.listeners.OnItemClickListener;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableList;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableListPosition;
 import com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder;
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder;
+import com.thoughtbot.expandablerecyclerview.viewholders.ItemViewHolder;
+
 import java.util.List;
 
-public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder, CVH extends ChildViewHolder>
-    extends RecyclerView.Adapter implements ExpandCollapseListener, OnGroupClickListener {
+public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder, CVH extends ChildViewHolder, IVH extends ItemViewHolder>
+    extends RecyclerView.Adapter implements ExpandCollapseListener, OnGroupClickListener, OnItemClickListener {
 
   private static final String EXPAND_STATE_MAP = "expandable_recyclerview_adapter_expand_state_map";
 
@@ -25,6 +28,8 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
 
   private OnGroupClickListener groupClickListener;
   private GroupExpandCollapseListener expandCollapseListener;
+
+  private OnItemClickListener itemClickListener;
 
   public ExpandableRecyclerViewAdapter(List<? extends ExpandableGroup> groups) {
     this.expandableList = new ExpandableList(groups);
@@ -53,8 +58,15 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
       case ExpandableListPosition.CHILD:
         CVH cvh = onCreateChildViewHolder(parent, viewType);
         return cvh;
+      case ExpandableListPosition.ITEM:
+        IVH ivh = onCreateItemViewHolder(parent, viewType);
+        ivh.setListener(this);
+        return ivh;
       default:
-        throw new IllegalArgumentException("viewType is not valid");
+        IVH ivh2 = onCreateCustomViewHolder(parent, viewType);
+        ivh2.setListener(this);
+        return ivh2;
+//      throw new IllegalArgumentException("viewType is not valid");
     }
   }
 
@@ -86,6 +98,12 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
         break;
       case ExpandableListPosition.CHILD:
         onBindChildViewHolder((CVH) holder, position, group, listPos.childPos);
+        break;
+      case ExpandableListPosition.ITEM:
+        onBindItemViewHolder((IVH) holder, position, group);
+        break;
+      default:
+        onBindCustomViewHolder((IVH) holder, position, group, listPos.type);
         break;
     }
   }
@@ -187,24 +205,6 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
   }
 
   /**
-   * Explicitly expand a group. Expanding already expandend groups does nothing.
-   *
-   * @param group the {@link ExpandableGroup} being expanded
-   */
-  public void expandGroup(ExpandableGroup group) {
-    expandCollapseController.expandGroup(group);
-  }
-
-  /**
-   * Explicitly collapse a group. Collapsing already collapsed groups does nothing.
-   *
-   * @param group the {@link ExpandableGroup} being expanded
-   */
-  public void collapseGroup(ExpandableGroup group) {
-    expandCollapseController.collapseGroup(group);
-  }
-
-  /**
    * @param flatPos the flattened position of an item in the list
    * @return true if {@code group} is expanded, false if it is collapsed
    */
@@ -260,6 +260,10 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
     groupClickListener = listener;
   }
 
+  public void setOnItemClickListener(OnItemClickListener listener) {
+    itemClickListener = listener;
+  }
+
   public void setOnGroupExpandCollapseListener(GroupExpandCollapseListener listener) {
     expandCollapseListener = listener;
   }
@@ -291,6 +295,10 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
    */
   public abstract CVH onCreateChildViewHolder(ViewGroup parent, int viewType);
 
+  public abstract IVH onCreateItemViewHolder(ViewGroup parent, int viewType);
+
+  public abstract IVH onCreateCustomViewHolder(ViewGroup parent, int viewType);
+
   /**
    * Called from onBindViewHolder(RecyclerView.ViewHolder, int) when the list item
    * bound to is a  child.
@@ -316,4 +324,24 @@ public abstract class ExpandableRecyclerViewAdapter<GVH extends GroupViewHolder,
    * @param group The {@link ExpandableGroup} to be used to bind data to this {@link GVH}
    */
   public abstract void onBindGroupViewHolder(GVH holder, int flatPosition, ExpandableGroup group);
+
+  public abstract void onBindItemViewHolder(IVH holder, int flatPosition, ExpandableGroup group);
+
+  public abstract void onBindCustomViewHolder(IVH holder, int flatPosition, ExpandableGroup group, int type);
+
+  @Override
+  public boolean onItemClick(int flatPos, boolean b) {
+    if (itemClickListener != null) {
+      return itemClickListener.onItemClick(flatPos, b);
+    }
+    return false;
+  }
+
+  @Override
+  public boolean onBeforeItemClick(int flatPos, boolean b) {
+    if (itemClickListener != null) {
+      return itemClickListener.onBeforeItemClick(flatPos, b);
+    }
+    return false;
+  }
 }
