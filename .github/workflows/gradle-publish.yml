@@ -9,9 +9,9 @@ name: Gradle Package
 
 on: 
   push: 
-    branches: [ main ] 
+    branches: [ glukhov/dev ] 
   pull_request: 
-    branches: [ main ]
+    branches: [ glukhov/dev ]
 
 jobs:
   build:
